@@ -6,24 +6,18 @@ package com;
 
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
-import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import uk.co.caprica.vlcj.binding.LibVlc;
@@ -39,7 +33,7 @@ import uk.co.caprica.vlcj.runtime.RuntimeUtil;
  */
 public class Main extends javax.swing.JFrame {
 
-    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\ovj.mp4";
+    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\overview.mp4";
     private static String VLC_INSTALL_PATH = "C:\\Program Files\\VideoLAN\\VLC";
     private static EmbeddedMediaPlayer player;
     SubTableModel model = new SubTableModel();
@@ -50,6 +44,8 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
+        setLocationRelativeTo(null);
+
         // Load library
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), VLC_INSTALL_PATH);
         Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
@@ -95,6 +91,8 @@ public class Main extends javax.swing.JFrame {
         tabSub = new JTable();
         lOpenFile = new javax.swing.JLabel();
         lOpenLibrary = new javax.swing.JLabel();
+        pbPlayer = new javax.swing.JProgressBar();
+        lTime = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MiniSub");
@@ -227,7 +225,7 @@ public class Main extends javax.swing.JFrame {
         pControlLayout.setVerticalGroup(
             pControlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pControlLayout.createSequentialGroup()
-                .addGap(16, 16, 16)
+                .addGap(4, 4, 4)
                 .addGroup(pControlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lDelete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -245,7 +243,7 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(tEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pControlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lCancel)
@@ -314,27 +312,42 @@ public class Main extends javax.swing.JFrame {
         pSubtitleLayout.setVerticalGroup(
             pSubtitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pSubtitleLayout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
+                .addGap(5, 5, 5)
                 .addGroup(pSubtitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lOpenFile, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lOpenLibrary, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        pbPlayer.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                pbPlayerMouseClicked(evt);
+            }
+        });
+
+        lTime.setText("00:00:00,000");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pControl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pSubtitle, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)))
+                        .addContainerGap()
+                        .addComponent(lTime)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(pbPlayer, javax.swing.GroupLayout.PREFERRED_SIZE, 604, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(pControl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pSubtitle, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -342,10 +355,14 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(canvas, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pSubtitle, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                    .addComponent(pControl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(pbPlayer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lTime))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pControl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pSubtitle, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -357,14 +374,26 @@ public class Main extends javax.swing.JFrame {
             if (player.isPlaying()) {
                 player.pause();
                 lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/play.png")));
+//                System.out.println(player.getLength());
             } else {
                 player.play();
                 lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/pause.png")));
+//                System.out.println(player.getLength());
             }
         } else {
             player.playMedia(MEDIA_FILE_PATH);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
             lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/pause.png")));
-            System.out.println(player.getLength());
+            pbPlayer.setMaximum((int) player.getLength());
+
+            Timer timer = new Timer();
+            timer.schedule(
+                    new UpdateSeekBar(), 0, 27);
         }
     }//GEN-LAST:event_lPlayMouseClicked
 
@@ -381,7 +410,7 @@ public class Main extends javax.swing.JFrame {
 
     private void lStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lStartMouseClicked
         long millis = player.getTime();
-        String milli = String.format("%02d:%02d:%02d,%02d",
+        String milli = String.format("%02d:%02d:%02d,%3d",
                 TimeUnit.MILLISECONDS.toHours(millis),
                 TimeUnit.MILLISECONDS.toMinutes(millis)
                 - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
@@ -414,30 +443,44 @@ public class Main extends javax.swing.JFrame {
             return;
         }
 
-        if (tabSub.getSelectedRow() == -1) {// Create
-            model.addRow(Arrays.asList(model.getRowCount() + 1, tStart.getText(), tEnd.getText(), tSub.getText()));
-        } else {// Update
-            model.setValueAt(Arrays.asList(model.getValueAt(tabSub.getSelectedRow(), 0),
-                    tStart.getText(), tEnd.getText(), tSub.getText()), tabSub.getSelectedRow(), 0);
+        String sub = tSub.getText();
+        String[] subs = sub.split(" ");
+        String subP = "";
+        for (int i = 1; i <= subs.length; i++) {
+            if (i % 5 == 0) {
+                subP = subP + " " + subs[i - 1] + "\n";
+            } else if (i % 5 == 1) {
+                subP = subP + subs[i - 1];
+            } else {
+                subP = subP + " " + subs[i - 1];
+            }
         }
 
-        for (Iterator<List> it = model.data.iterator(); it.hasNext();) {
-            List datum = it.next();
+        if (tabSub.getSelectedRow() == -1) {// Create
+            model.addRow(Arrays.asList(model.getRowCount() + 1, tStart.getText(), tEnd.getText(), subP));
+        } else {// Update
+            model.setValueAt(Arrays.asList(model.getValueAt(tabSub.getSelectedRow(), 0),
+                    tStart.getText(), tEnd.getText(), subP), tabSub.getSelectedRow(), 0);
+        }
 
-            BufferedWriter writer = null;
-            try {
-                File mediaFile = new File(MEDIA_FILE_PATH);
-                String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
-                File srtFile = new File(srtPath);
+        BufferedWriter writer = null;
+        File mediaFile = new File(MEDIA_FILE_PATH);
+        String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
+        File srtFile = new File(srtPath);
+        try {
+            writer = new BufferedWriter(new FileWriter(srtFile));
 
-                writer = new BufferedWriter(new FileWriter(srtFile));
+            for (Iterator<List> it = model.data.iterator(); it.hasNext();) {
+                List datum = it.next();
                 writer.write(datum.get(0) + "\n" + datum.get(1) + " --> " + datum.get(2) + "\n" + datum.get(3) + "\n\n");
+            }
+        } catch (Exception e) {
+        } finally {
+            player.setSubTitleFile(srtFile);
+            try {
+                writer.close();
+
             } catch (Exception e) {
-            } finally {
-                try {
-                    writer.close();
-                } catch (Exception e) {
-                }
             }
         }
 
@@ -484,6 +527,14 @@ public class Main extends javax.swing.JFrame {
         VLC_INSTALL_PATH = mediaFile.getAbsolutePath();
     }//GEN-LAST:event_lOpenLibraryMouseClicked
 
+    private void pbPlayerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pbPlayerMouseClicked
+        int mouseX = evt.getX();
+        int progressBarVal = (int) Math.round(((double) mouseX / (double) pbPlayer.getWidth()) * pbPlayer.getMaximum());
+
+        pbPlayer.setValue(progressBarVal);
+        player.setTime(progressBarVal);
+    }//GEN-LAST:event_pbPlayerMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -498,16 +549,22 @@ public class Main extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Main.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Main.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Main.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Main.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -518,6 +575,8 @@ public class Main extends javax.swing.JFrame {
                 new Main().setVisible(true);
             }
         });
+
+
     }
 
     public class SubTableModel extends AbstractTableModel {
@@ -588,6 +647,24 @@ public class Main extends javax.swing.JFrame {
             return getValueAt(0, c).getClass();
         }
     };
+
+    class UpdateSeekBar extends TimerTask {
+
+        @Override
+        public void run() {
+            pbPlayer.setValue((int) player.getTime());
+
+            long millis = player.getTime();
+            String milli = String.format("%02d:%02d:%02d,%02d",
+                    TimeUnit.MILLISECONDS.toHours(millis),
+                    TimeUnit.MILLISECONDS.toMinutes(millis)
+                    - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                    TimeUnit.MILLISECONDS.toSeconds(millis)
+                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)),
+                    millis % 1000);
+            lTime.setText(milli);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cMusic;
     private java.awt.Canvas canvas;
@@ -606,8 +683,10 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel lSave;
     private javax.swing.JLabel lStart;
     private javax.swing.JLabel lStop;
+    private javax.swing.JLabel lTime;
     private javax.swing.JPanel pControl;
     private javax.swing.JPanel pSubtitle;
+    private javax.swing.JProgressBar pbPlayer;
     private javax.swing.JTextField tEnd;
     private javax.swing.JTextField tStart;
     private javax.swing.JTextArea tSub;
