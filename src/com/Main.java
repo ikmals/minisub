@@ -8,14 +8,21 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -33,7 +40,7 @@ import uk.co.caprica.vlcj.runtime.RuntimeUtil;
  */
 public class Main extends javax.swing.JFrame {
 
-    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\overview.mp4";
+    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\Grown Ups 2 2013 READNFO TS XViD AC3-FREE.avi";
     private static String VLC_INSTALL_PATH = "C:\\Program Files\\VideoLAN\\VLC";
     private static EmbeddedMediaPlayer player;
     SubTableModel model = new SubTableModel();
@@ -374,11 +381,9 @@ public class Main extends javax.swing.JFrame {
             if (player.isPlaying()) {
                 player.pause();
                 lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/play.png")));
-//                System.out.println(player.getLength());
             } else {
                 player.play();
                 lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/pause.png")));
-//                System.out.println(player.getLength());
             }
         } else {
             player.playMedia(MEDIA_FILE_PATH);
@@ -394,6 +399,56 @@ public class Main extends javax.swing.JFrame {
             Timer timer = new Timer();
             timer.schedule(
                     new UpdateSeekBar(), 0, 27);
+
+            File mediaFile = new File(MEDIA_FILE_PATH);
+            String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
+            File text = new File(srtPath);
+            Scanner scnr;
+
+            try {
+                scnr = new Scanner(text);
+                String number = "";
+                String num = "";
+                String sub = "";
+                String line;
+                String time[];
+                String start = "";
+                String end = "";
+
+                boolean flag = false;
+                boolean add = true;
+
+                while (scnr.hasNextLine()) {
+                    line = scnr.nextLine();
+
+                    if (flag) {
+                        sub = sub + line;
+                    }
+
+                    if (line.contains("-->")) { // Time
+                        time = line.split(" --> ");
+                        start = time[0];
+                        end = time[1];
+                        num = number;
+                        flag = true;
+                        add = true;
+                    }
+
+                    if (line.isEmpty()) {
+                        if (add) {
+                            model.addRow(Arrays.asList(num, start, end, sub));
+                            sub = "";
+                            add = false;
+                        }
+
+                        flag = false;
+                    }
+
+                    number = line;
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_lPlayMouseClicked
 
@@ -436,6 +491,17 @@ public class Main extends javax.swing.JFrame {
         tStart.setText(model.getValueAt(tabSub.getSelectedRow(), 1).toString());
         tEnd.setText(model.getValueAt(tabSub.getSelectedRow(), 2).toString());
         tSub.setText(model.getValueAt(tabSub.getSelectedRow(), 3).toString());
+
+        if (evt.getClickCount() == 2) {
+            int milli;
+            String time[] = tStart.getText().split(":");
+            String mil[] = time[2].split(",");
+            milli = Integer.valueOf(time[0]) * 3600000
+                    + Integer.valueOf(time[1]) * 60000
+                    + Integer.valueOf(mil[0]) * 1000
+                    + Integer.valueOf(mil[1]);
+            player.setTime(milli);
+        }
     }//GEN-LAST:event_tabSubMouseClicked
 
     private void lSaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lSaveMouseClicked
