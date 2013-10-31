@@ -9,10 +9,7 @@ import com.sun.jna.NativeLibrary;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -25,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
+import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import uk.co.caprica.vlcj.binding.LibVlc;
@@ -40,7 +38,7 @@ import uk.co.caprica.vlcj.runtime.RuntimeUtil;
  */
 public class Main extends javax.swing.JFrame {
 
-    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\Grown Ups 2 2013 READNFO TS XViD AC3-FREE.avi";
+    private static String MEDIA_FILE_PATH = "C:\\Users\\Ikmal\\Videos\\vickyzaskia.mp4";
     private static String VLC_INSTALL_PATH = "C:\\Program Files\\VideoLAN\\VLC";
     private static EmbeddedMediaPlayer player;
     SubTableModel model = new SubTableModel();
@@ -394,18 +392,12 @@ public class Main extends javax.swing.JFrame {
             }
         } else {
             player.playMedia(MEDIA_FILE_PATH);
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-
             lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/pause.png")));
-            pbPlayer.setMaximum((int) player.getLength());
 
-            Timer timer = new Timer();
-            timer.schedule(
-                    new UpdateSeekBar(), 0, 27);
+            // Empty model then fill from .srt
+            while (!model.isEmpty()) {
+                model.removeRow(0);
+            }
 
             File mediaFile = new File(MEDIA_FILE_PATH);
             String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
@@ -456,12 +448,29 @@ public class Main extends javax.swing.JFrame {
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
+
+            // Wait for 2 seconds so we can get length of media
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            // Set progress bar's maximum then update seek bar's length every 27 ms
+            pbPlayer.setMaximum((int) player.getLength());
+
+            Timer timer = new Timer();
+            timer.schedule(
+                    new UpdateSeekBar(), 0, 27);
         }
     }//GEN-LAST:event_lPlayMouseClicked
 
     private void lStopMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lStopMouseClicked
         player.stop();
         lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/play.png")));
+        while (!model.isEmpty()) {
+            model.removeRow(0);
+        }
     }//GEN-LAST:event_lStopMouseClicked
 
     private void lAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lAddMouseClicked
@@ -519,6 +528,11 @@ public class Main extends javax.swing.JFrame {
         String sub = tSub.getText();
         String[] subs = sub.split(" ");
         String subP = "";
+        if (subs.length >= 14) {
+            JOptionPane.showMessageDialog(this, "Save aborted, sentence length is more than 15 words.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         for (int i = 1; i <= subs.length; i++) {
             if (i % 5 == 0) {
                 subP = subP + " " + subs[i - 1] + "\n";
@@ -529,10 +543,10 @@ public class Main extends javax.swing.JFrame {
             }
         }
 
-        if(cMusic.isSelected()){
+        if (cMusic.isSelected()) {
             subP = "<em>♪ " + subP + " ♪</em>";
         }
-        
+
         if (tabSub.getSelectedRow() == -1) {// Create
             model.addRow(Arrays.asList(model.getRowCount() + 1, tStart.getText(), tEnd.getText(), subP));
         } else {// Update
@@ -540,26 +554,7 @@ public class Main extends javax.swing.JFrame {
                     tStart.getText(), tEnd.getText(), subP), tabSub.getSelectedRow(), 0);
         }
 
-        BufferedWriter writer = null;
-        File mediaFile = new File(MEDIA_FILE_PATH);
-        String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
-        File srtFile = new File(srtPath);
-        try {
-            writer = new BufferedWriter(new FileWriter(srtFile));
-
-            for (Iterator<List> it = model.data.iterator(); it.hasNext();) {
-                List datum = it.next();
-                writer.write(datum.get(0) + "\n" + datum.get(1) + " --> " + datum.get(2) + "\n" + datum.get(3) + "\n\n");
-            }
-        } catch (Exception e) {
-        } finally {
-            player.setSubTitleFile(srtFile);
-            try {
-                writer.close();
-
-            } catch (Exception e) {
-            }
-        }
+        saveSRT();
 
         tStart.setText("");
         tEnd.setText("");
@@ -579,6 +574,7 @@ public class Main extends javax.swing.JFrame {
             tStart.setText("");
             tEnd.setText("");
             tSub.setText("");
+            saveSRT();
         }
     }//GEN-LAST:event_lDeleteMouseClicked
 
@@ -656,6 +652,29 @@ public class Main extends javax.swing.JFrame {
 
     }
 
+    public void saveSRT() {
+        BufferedWriter writer = null;
+        File mediaFile = new File(MEDIA_FILE_PATH);
+        String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
+        File srtFile = new File(srtPath);
+        try {
+            writer = new BufferedWriter(new FileWriter(srtFile));
+
+            for (Iterator<List> it = model.data.iterator(); it.hasNext();) {
+                List datum = it.next();
+                writer.write(datum.get(0) + "\n" + datum.get(1) + " --> " + datum.get(2) + "\n" + datum.get(3) + "\n\n");
+            }
+        } catch (Exception e) {
+        } finally {
+            player.setSubTitleFile(srtFile);
+            try {
+                writer.close();
+
+            } catch (Exception e) {
+            }
+        }
+    }
+
     public class SubTableModel extends AbstractTableModel {
 
         private List<String> columnNames = new ArrayList();
@@ -666,6 +685,10 @@ public class Main extends javax.swing.JFrame {
             columnNames.add("Start");
             columnNames.add("End");
             columnNames.add("Text");
+        }
+
+        public boolean isEmpty() {
+            return data.isEmpty();
         }
 
         public void addRow(List rowData) {
@@ -725,7 +748,7 @@ public class Main extends javax.swing.JFrame {
         }
     };
 
-    class UpdateSeekBar extends TimerTask {
+    public class UpdateSeekBar extends TimerTask {
 
         @Override
         public void run() {
@@ -739,7 +762,12 @@ public class Main extends javax.swing.JFrame {
                     TimeUnit.MILLISECONDS.toSeconds(millis)
                     - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)),
                     millis % 1000);
-            lTime.setText(milli);
+
+            if (millis > 0) {
+                lTime.setText(milli);
+            } else {
+                lTime.setText("00:00:00,000");
+            }
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
