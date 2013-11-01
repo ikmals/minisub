@@ -6,10 +6,13 @@ package com;
 
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -20,6 +23,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
@@ -43,11 +47,19 @@ public class Main extends javax.swing.JFrame {
     private static EmbeddedMediaPlayer player;
     SubTableModel model = new SubTableModel();
     private static JFileChooser fChooser = new JFileChooser();
+    private Image image;
 
     /**
      * Creates new form Main
      */
     public Main() {
+        try{
+            image = ImageIO.read(getClass().getResource("/com/images/minisub.png"));
+        }
+        catch(IOException e){
+            
+        }
+        
         initComponents();
         setLocationRelativeTo(null);
 
@@ -101,6 +113,7 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MiniSub");
+        setIconImage(image);
         setResizable(false);
 
         canvas.setBackground(new java.awt.Color(255, 255, 255));
@@ -109,6 +122,7 @@ public class Main extends javax.swing.JFrame {
         pControl.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
 
         lPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/play.png"))); // NOI18N
+        lPlay.setToolTipText("Play/Pause");
         lPlay.setMaximumSize(new java.awt.Dimension(22, 22));
         lPlay.setMinimumSize(new java.awt.Dimension(22, 22));
         lPlay.setPreferredSize(new java.awt.Dimension(22, 22));
@@ -119,6 +133,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/stop.png"))); // NOI18N
+        lStop.setToolTipText("Stop");
         lStop.setMaximumSize(new java.awt.Dimension(22, 22));
         lStop.setMinimumSize(new java.awt.Dimension(22, 22));
         lStop.setPreferredSize(new java.awt.Dimension(22, 22));
@@ -129,6 +144,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/add.png"))); // NOI18N
+        lAdd.setToolTipText("Add Subtitle");
         lAdd.setMaximumSize(new java.awt.Dimension(22, 22));
         lAdd.setMinimumSize(new java.awt.Dimension(22, 22));
         lAdd.setPreferredSize(new java.awt.Dimension(22, 22));
@@ -139,6 +155,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/delete.png"))); // NOI18N
+        lDelete.setToolTipText("Delete Subtitle");
         lDelete.setMaximumSize(new java.awt.Dimension(22, 22));
         lDelete.setMinimumSize(new java.awt.Dimension(22, 22));
         lDelete.setPreferredSize(new java.awt.Dimension(22, 22));
@@ -149,6 +166,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/start.png"))); // NOI18N
+        lStart.setToolTipText("Start Time");
         lStart.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lStartMouseClicked(evt);
@@ -156,6 +174,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lEnd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/end.png"))); // NOI18N
+        lEnd.setToolTipText("End Time");
         lEnd.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lEndMouseClicked(evt);
@@ -164,13 +183,19 @@ public class Main extends javax.swing.JFrame {
 
         jLabel1.setText("Start");
 
+        tStart.setToolTipText("Start Time");
+
         jLabel2.setText("End");
+
+        tEnd.setToolTipText("End Time");
 
         tSub.setColumns(20);
         tSub.setRows(5);
+        tSub.setToolTipText("Subtitle");
         jScrollPane1.setViewportView(tSub);
 
         lCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/cancel.png"))); // NOI18N
+        lCancel.setToolTipText("Cancel");
         lCancel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lCancelMouseClicked(evt);
@@ -178,20 +203,28 @@ public class Main extends javax.swing.JFrame {
         });
 
         lSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/save.png"))); // NOI18N
+        lSave.setToolTipText("Save Subtitle");
         lSave.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lSaveMouseClicked(evt);
             }
         });
 
+        cMusic.setToolTipText("Music");
         cMusic.setMaximumSize(new java.awt.Dimension(25, 25));
         cMusic.setMinimumSize(new java.awt.Dimension(25, 25));
         cMusic.setPreferredSize(new java.awt.Dimension(25, 25));
 
         lMusic.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/music.png"))); // NOI18N
+        lMusic.setToolTipText("Music");
         lMusic.setMaximumSize(new java.awt.Dimension(22, 25));
         lMusic.setMinimumSize(new java.awt.Dimension(22, 25));
         lMusic.setPreferredSize(new java.awt.Dimension(22, 25));
+        lMusic.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lMusicMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout pControlLayout = new javax.swing.GroupLayout(pControl);
         pControl.setLayout(pControlLayout);
@@ -284,6 +317,7 @@ public class Main extends javax.swing.JFrame {
                 column.setPreferredWidth(55);
             }
         }
+        tabSub.setToolTipText("Subtitle List");
         tabSub.getTableHeader().setReorderingAllowed(false);
         tabSub.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -293,6 +327,7 @@ public class Main extends javax.swing.JFrame {
         jScrollPane2.setViewportView(tabSub);
 
         lOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/openfile.png"))); // NOI18N
+        lOpenFile.setToolTipText("Open Media File");
         lOpenFile.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lOpenFileMouseClicked(evt);
@@ -300,6 +335,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lOpenLibrary.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/images/openlibrary.png"))); // NOI18N
+        lOpenLibrary.setToolTipText("Open Library Folder");
         lOpenLibrary.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lOpenLibraryMouseClicked(evt);
@@ -333,6 +369,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        pbPlayer.setToolTipText("Seekbar");
         pbPlayer.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 pbPlayerMouseClicked(evt);
@@ -340,6 +377,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         lTime.setText("00:00:00,000");
+        lTime.setToolTipText("Time Elapsed");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -352,7 +390,7 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(lTime)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(pbPlayer, javax.swing.GroupLayout.PREFERRED_SIZE, 604, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -471,6 +509,10 @@ public class Main extends javax.swing.JFrame {
         while (!model.isEmpty()) {
             model.removeRow(0);
         }
+        
+        tStart.setText("");
+        tEnd.setText("");
+        tSub.setText("");
     }//GEN-LAST:event_lStopMouseClicked
 
     private void lAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lAddMouseClicked
@@ -601,12 +643,24 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_lOpenLibraryMouseClicked
 
     private void pbPlayerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pbPlayerMouseClicked
+        if (!player.isPlayable()) {
+            return;
+        }
+
         int mouseX = evt.getX();
         int progressBarVal = (int) Math.round(((double) mouseX / (double) pbPlayer.getWidth()) * pbPlayer.getMaximum());
 
         pbPlayer.setValue(progressBarVal);
         player.setTime(progressBarVal);
     }//GEN-LAST:event_pbPlayerMouseClicked
+
+    private void lMusicMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lMusicMouseClicked
+        if (cMusic.isSelected()) {
+            cMusic.setSelected(false);
+        } else {
+            cMusic.setSelected(true);
+        }
+    }//GEN-LAST:event_lMusicMouseClicked
 
     /**
      * @param args the command line arguments
