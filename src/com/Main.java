@@ -7,7 +7,6 @@ package com;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
