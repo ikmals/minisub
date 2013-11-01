@@ -53,13 +53,11 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     public Main() {
-        try{
+        try {
             image = ImageIO.read(getClass().getResource("/com/images/minisub.png"));
+        } catch (IOException e) {
         }
-        catch(IOException e){
-            
-        }
-        
+
         initComponents();
         setLocationRelativeTo(null);
 
@@ -440,51 +438,8 @@ public class Main extends javax.swing.JFrame {
             File mediaFile = new File(MEDIA_FILE_PATH);
             String srtPath = mediaFile.getPath().replaceFirst("[.][^.]+$", "") + ".srt";
             File text = new File(srtPath);
-            Scanner scnr;
-
-            try {
-                scnr = new Scanner(text);
-                String number = "";
-                String num = "";
-                String sub = "";
-                String line;
-                String time[];
-                String start = "";
-                String end = "";
-
-                boolean flag = false;
-                boolean add = true;
-
-                while (scnr.hasNextLine()) {
-                    line = scnr.nextLine();
-
-                    if (flag) {
-                        sub = sub + line;
-                    }
-
-                    if (line.contains("-->")) { // Time
-                        time = line.split(" --> ");
-                        start = time[0];
-                        end = time[1];
-                        num = number;
-                        flag = true;
-                        add = true;
-                    }
-
-                    if (line.isEmpty()) {
-                        if (add) {
-                            model.addRow(Arrays.asList(num, start, end, sub));
-                            sub = "";
-                            add = false;
-                        }
-
-                        flag = false;
-                    }
-
-                    number = line;
-                }
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            if (text.exists()) {
+                loadSRT(text);
             }
 
             // Wait for 2 seconds so we can get length of media
@@ -509,10 +464,11 @@ public class Main extends javax.swing.JFrame {
         while (!model.isEmpty()) {
             model.removeRow(0);
         }
-        
+
         tStart.setText("");
         tEnd.setText("");
         tSub.setText("");
+        cMusic.setSelected(false);
     }//GEN-LAST:event_lStopMouseClicked
 
     private void lAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lAddMouseClicked
@@ -601,6 +557,7 @@ public class Main extends javax.swing.JFrame {
         tStart.setText("");
         tEnd.setText("");
         tSub.setText("");
+        cMusic.setSelected(false);
     }//GEN-LAST:event_lSaveMouseClicked
 
     private void lCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lCancelMouseClicked
@@ -608,6 +565,7 @@ public class Main extends javax.swing.JFrame {
         tEnd.setText("");
         tSub.setText("");
         tabSub.clearSelection();
+        cMusic.setSelected(false);
     }//GEN-LAST:event_lCancelMouseClicked
 
     private void lDeleteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lDeleteMouseClicked
@@ -616,6 +574,7 @@ public class Main extends javax.swing.JFrame {
             tStart.setText("");
             tEnd.setText("");
             tSub.setText("");
+            cMusic.setSelected(false);
             saveSRT();
         }
     }//GEN-LAST:event_lDeleteMouseClicked
@@ -629,6 +588,7 @@ public class Main extends javax.swing.JFrame {
 
         File mediaFile = fChooser.getSelectedFile();
         MEDIA_FILE_PATH = mediaFile.getAbsolutePath();
+        setTitle("MiniSub - " + MEDIA_FILE_PATH);
     }//GEN-LAST:event_lOpenFileMouseClicked
 
     private void lOpenLibraryMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lOpenLibraryMouseClicked
@@ -704,6 +664,55 @@ public class Main extends javax.swing.JFrame {
         });
 
 
+    }
+
+    public void loadSRT(File text) {
+        Scanner scnr;
+
+        try {
+            scnr = new Scanner(text);
+            String number = "";
+            String num = "";
+            String sub = "";
+            String line;
+            String time[];
+            String start = "";
+            String end = "";
+
+            boolean flag = false;
+            boolean add = true;
+
+            while (scnr.hasNextLine()) {
+                line = scnr.nextLine();
+
+                if (flag) {
+                    sub = sub + line;
+                }
+
+                if (line.contains("-->")) { // Time
+                    time = line.split(" --> ");
+                    start = time[0];
+                    end = time[1];
+                    num = number;
+                    flag = true;
+                    add = true;
+                }
+
+                if (line.isEmpty()) {
+                    if (add) {
+                        model.addRow(Arrays.asList(num, start, end, sub));
+                        sub = "";
+                        add = false;
+                    }
+
+                    flag = false;
+                }
+
+                number = line;
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void saveSRT() {
